@@ -3,7 +3,7 @@ import { Pool } from "pg";
 import { config } from "../config/index.js";
 import { userTableQuery } from "./initDB.js";
 
-const pool = new Pool({
+export const pool = new Pool({
   connectionString: config.databaseUrl,
 });
 
