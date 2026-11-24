@@ -1,6 +1,7 @@
 import cors from "cors";
 import express from "express";
 import router from "./modules/auth/route.js";
+import { loginRouter } from "./modules/login/login.route.js";
 
 const app = express();
 
@@ -23,6 +24,8 @@ app.get("/", (req, res) => {
 
 // auth routes
 
-app.use( "/api/registers",router)
+app.use("/api/registers", router);
+
+app.use("/api/login", loginRouter);
 
 export default app;
