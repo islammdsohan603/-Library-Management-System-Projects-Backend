@@ -1,5 +1,6 @@
 import cors from "cors";
 import express from "express";
+import router from "./modules/auth/route.js";
 
 const app = express();
 
@@ -19,5 +20,9 @@ app.get("/", (req, res) => {
     message: "Library Management API is Rnning",
   });
 });
+
+// auth routes
+
+app.use( "/api/registers",router)
 
 export default app;
