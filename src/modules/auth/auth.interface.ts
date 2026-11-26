@@ -5,3 +5,8 @@ export interface UserRigister {
   is_active: boolean;
   role: string;
 }
+
+export interface UserLogin {
+  email: string;
+  password: string;
+}

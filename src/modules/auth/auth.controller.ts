@@ -1,7 +1,11 @@
-import { type RequestHandler } from "express";
-import { AuthServiceError, registersService } from "./auth.service.js";
+import { type Request, type Response } from "express";
+import {
+  AuthServiceError,
+  loginService,
+  registersService,
+} from "./auth.service.js";
 
-export const registersController: RequestHandler = async (req, res) => {
+export const registersController = async (req: Request, res: Response) => {
   try {
     // Step 1: Call Service
     const userData = await registersService(req.body);
@@ -27,6 +31,23 @@ export const registersController: RequestHandler = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Internal Server Error",
+    });
+  }
+};
+
+export const loginController = async (req: Request, res: Response) => {
+  try {
+    const usersLogin = await loginService(req.body);
+
+    return res.status(200).json({
+      success: true,
+      message: "User Login Successfully!",
+      data: usersLogin,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: (error as Error).message,
     });
   }
 };

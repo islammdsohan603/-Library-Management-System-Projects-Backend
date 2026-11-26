@@ -1,6 +1,15 @@
+import bcrypt from "bcryptjs";
+import Jwt from "jsonwebtoken";
 import { pool } from "../../db/dataBase.js";
 import { hashPassword } from "../../utils/passwordHelpers.js";
-import type { UserRigister } from "./auth.interface.js";
+import type { UserLogin, UserRigister } from "./auth.interface.js";
+
+const jwtSecret = process.env.JWT_SECRET as string;
+const jwtRefreshSecret = process.env.JWT_REFRESH_SECRET as string;
+
+if (!jwtSecret) {
+  throw new Error("JWT Secrets are missing");
+}
 
 // Custom Service Error
 export class AuthServiceError extends Error {
@@ -59,4 +68,71 @@ export const registersService = async (payload: UserRigister) => {
 
   // Step 7: Return User Data
   return result.rows[0];
+};
+
+export const loginService = async (payload: UserLogin) => {
+  const { email, password } = payload;
+
+  if (!email || !password) {
+    throw new Error("All Fileds are Requred!");
+  }
+
+  const result = await pool.query(
+    `
+    SELECT * FROM users WHERE email=$1
+    `,
+    [email],
+  );
+
+  const user = result.rows[0];
+
+  if (!user || !user.is_active) {
+    throw new Error("Invalid Email or Password");
+  }
+
+  const matchPassword = await bcrypt.compare(password, user.password);
+
+  if (!matchPassword) {
+    throw new Error("Invalid Email or Password");
+  }
+
+  const jwtPayload = {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+  };
+
+  const accessToken = Jwt.sign(
+    {
+      ...jwtPayload,
+      tokenType: "access",
+    },
+    jwtSecret,
+    {
+      expiresIn: "5m",
+    },
+  );
+
+  const refreshToken = Jwt.sign(
+    {
+      sub: String(user.id),
+      tokenType: "refresh",
+    },
+    jwtRefreshSecret,
+    {
+      expiresIn: "2d",
+    },
+  );
+
+  return {
+    accessToken,
+    refreshToken,
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    },
+  };
 };
